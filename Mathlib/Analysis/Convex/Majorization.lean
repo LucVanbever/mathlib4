@@ -5,20 +5,23 @@ Authors: Luc Vanbever
 -/
 module
 
-import Mathlib.Analysis.Convex.Birkhoff
 public import Mathlib.Analysis.Convex.DoublyStochasticMatrix
+
+import Mathlib.Analysis.Convex.Birkhoff
 import Mathlib.Data.Fin.Tuple.Sort
-import Mathlib.Tactic.TypeStar
 import Mathlib.Tactic.Lemma
+import Mathlib.Tactic.TypeStar
 
 /-!
 # Majorization
 
 ## Main definitions
-* `MajorizedBy x y`: * MajorizedBy x y: any `k` entries of `x` sum to at most
+
+* `MajorizedBy x y`: any `k` entries of `x` sum to at most
   some `k` entries of `y`, and the totals agree.
 
 ## Main statements
+
 * `majorizedBy_iff_exists_doublyStochastic`: `x` is majorized by `y` iff `x = M *ᵥ y` for a
   doubly stochastic matrix `M`.
 
@@ -36,7 +39,7 @@ Both vectors are first reindexed by `Fin (Fintype.card ι)` so that they become 
 sequence of transfer steps (T-transforms), each of which replaces `y` by `T *ᵥ y` for a doubly
 stochastic matrix `T`. The number of coordinates where `y` differs from `x` decreases at each
 step, so the product of the matrices `T` gives the required `M`. The matrix is then transported
-back to `ι` along the reindexing equivalences (`submatrix_mem_doublyStochastic`).
+back to `ι` via the reindexing (with `Matrix.reindex` and `reindex_mem_doublyStochastic`).
 
 For the converse, Birkhoff's theorem writes `M` as a convex combination of permutation
 matrices. Each permutation matrix only rearranges `y`, and the sum of a rearrangement of `y`
@@ -44,7 +47,8 @@ over a set of size `k` is at most the largest such sum of `y`.
 
 ## References
 
-* [A. W. Marshall, I. Olkin, B. C. Arnold, *Inequalities: Theory of Majorization and Its Applications*][MarshallOlkinArnold2011]
+* [A. W. Marshall, I. Olkin, B. C. Arnold, *Inequalities: Theory of Majorization and Its
+Applications*][MarshallOlkinArnold2011]
 
 ## Tags
 
@@ -56,6 +60,7 @@ majorization, doubly stochastic
 open Finset Matrix
 
 section Defs
+
 variable {ι κ R : Type*} [Fintype ι] [Fintype κ] [AddCommMonoid R] [LE R]
 
 /-- `x` is majorized by `y`: any `k` entries of `x` sum to at most some `k` entries of `y`,
@@ -79,9 +84,11 @@ theorem MajorizedBy.comp_equiv {x y : ι → R} (h : MajorizedBy x y) (φ ψ : �
   · simp only [Function.comp_apply]
     rw [Equiv.sum_comp φ x, Equiv.sum_comp ψ y]
     exact h₂
+
 end Defs
 
 section Sorting
+
 variable {ι R : Type*} [Fintype ι] [LinearOrder R]
 
 /-- Every vector can be reindexed by an equivalence with `Fin (Fintype.card ι)` so
@@ -93,9 +100,11 @@ theorem exists_equiv_antitone_comp (x : ι → R) :
   refine ⟨(Tuple.sort f).trans e.symm, fun a b hab => ?_⟩
   have h := Tuple.monotone_sort f hab
   simpa [f] using h
+
 end Sorting
 
 section InitialSegm
+
 variable {n : ℕ}
 
 /-- The initial segment of `Fin n` containing all elements strictly less than `m`. -/
@@ -140,9 +149,11 @@ private lemma sum_initialSegm_succ {R : Type*} [AddCommMonoid R] (F : Fin n → 
     intro h
     exact lt_irrefl k.val h.2
   rw [hsplit, Finset.sum_insert hk, add_comm]
+
 end InitialSegm
 
 section Sorted
+
 variable {n : ℕ} {R : Type*} [Field R] [LinearOrder R] [IsStrictOrderedRing R]
 
 /-- Exchange argument: an antitone `w` is maximised on `initialSegm m`
@@ -153,7 +164,7 @@ private lemma sum_le_sum_initialSegm {w : Fin n → R} (hw : Antitone w) {m : �
   have hm : m ≤ n := by
     have := Finset.card_le_univ S
     simpa [hS] using this
-  set L : Finset (Fin n) := initialSegm m with hL
+  set L : Finset (Fin n) := initialSegm m
   have hLcard : L.card = m := card_initialSegm hm
   -- `S \ L` and `L \ S` have the same size
   have hcard : (S \ L).card = (L \ S).card := by
@@ -262,7 +273,7 @@ private lemma exists_transfer_jk_indices {x y : Fin n → R} (hy : Antitone y)
 
 /-- One T-transform step. If `x` and `y` are antitone, `x` is majorized by `y`, and `x ≠ y`,
 then there is a doubly stochastic matrix `T` (a convex combination of the identity and a
-transposition) such that `y' = T *ᵥ y` is still antitone, is still a majorizes `x`, and
+transposition) such that `y' = T *ᵥ y` is still antitone, still majorizes `x`, and
 differs from `x` in strictly fewer coordinates than `y` does. -/
 private lemma exists_doublyStochastic_step {x y : Fin n → R} (hx : Antitone x) (hy : Antitone y)
     (h : MajorizedBy x y) (hne : x ≠ y) :
@@ -274,7 +285,7 @@ private lemma exists_doublyStochastic_step {x y : Fin n → R} (hx : Antitone x)
   obtain ⟨j, k, hjk, hxj, hyk, hmid, hbef⟩ := exists_transfer_jk_indices hy h hne
   have htot : ∑ i, x i = ∑ i, y i := h.2
   have hjk_ne : j ≠ k := hjk.ne
-  -- 3 cases will be considered for i : i=j OR i=k OR (i≠j AND i≠k)
+  -- case split on whether i is j, k, or neither
   have cls : ∀ i : Fin n, i = j ∨ i = k ∨ (i ≠ j ∧ i ≠ k) := by
     intro i
     by_cases h1 : i = j
@@ -318,7 +329,7 @@ private lemma exists_doublyStochastic_step {x y : Fin n → R} (hx : Antitone x)
       have e : (((1 - lam) • (1 : Matrix (Fin n) (Fin n) R)
           + lam • Equiv.Perm.permMatrix R (Equiv.swap j k)) *ᵥ y) i
           = (1 - lam) * y i + lam * y (Equiv.swap j k i) := by
-        simp [Matrix.add_mulVec, hperm]
+        simp only [add_mulVec, Pi.add_apply, hperm, add_left_inj]
         simp [Matrix.smul_mulVec, Matrix.one_mulVec]
       rw [e]
       rcases cls i with hp | hp | ⟨hij, hik⟩
@@ -401,7 +412,7 @@ private lemma exists_doublyStochastic_step {x y : Fin n → R} (hx : Antitone x)
   exact ⟨T, y', hmem, hT, hanti, hmaj', hcard⟩
 
 /-- Sorted case of `exists_doublyStochastic_of_majorizedBy`: if `x` and `y` are antitone and
-`x` is majorized by `y`, then `x = M *ᵥ y` for a doubly stochastic `M`.  The proof composes
+`x` is majorized by `y`, then `x = M *ᵥ y` for a doubly stochastic `M`. The proof composes
 T-transforms, by induction on the number of coordinates where `y` differs from `x`. -/
 private theorem exists_doublyStochastic_of_antitone {x y : Fin n → R}
     (hx : Antitone x) (hy : Antitone y) (h : MajorizedBy x y) :
@@ -423,9 +434,11 @@ private theorem exists_doublyStochastic_of_antitone {x y : Fin n → R}
       obtain ⟨M, hM, hMz'⟩ := ih _ (lt_of_lt_of_eq hlt hc) z' hz' hxz' rfl
       refine ⟨M * T, (doublyStochastic R (Fin n)).mul_mem hM hT, ?_⟩
       rw [← Matrix.mulVec_mulVec, hTz, hMz']
+
 end Sorted
 
 section Main
+
 variable {ι R : Type*} [Fintype ι] [DecidableEq ι] [Field R] [LinearOrder R] [IsStrictOrderedRing R]
 
 /-- If `x` is majorized by `y`, then `x = M *ᵥ y` for some doubly stochastic matrix `M`. -/
@@ -453,8 +466,8 @@ theorem exists_doublyStochastic_of_majorizedBy {x y : ι → R} (h : MajorizedBy
 /-- `M *ᵥ y` is majorized by `y` when `M` is doubly stochastic. -/
 theorem majorizedBy_mulVec_of_mem_doublyStochastic {M : Matrix ι ι R}
     (hM : M ∈ doublyStochastic R ι) (y : ι → R) : MajorizedBy (M *ᵥ y) y := by
+  -- write x for M *ᵥ y
   generalize hx : M *ᵥ y = x
-  -- the goal is now `MajorizedBy x y`, with `hx : M *ᵥ y = x`;
   -- Birkhoff: `M` is a convex combination of permutation matrices
   obtain ⟨w, hw0, hw1, hwM⟩ := exists_eq_sum_perm_of_mem_doublyStochastic hM
   -- each permutation matrix rearranges `y`
@@ -506,4 +519,5 @@ theorem majorizedBy_iff_exists_doublyStochastic {x y : ι → R} :
     fun ⟨_, hM, hx⟩ => by
       subst hx
       exact majorizedBy_mulVec_of_mem_doublyStochastic hM y⟩
+
 end Main

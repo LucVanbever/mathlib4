@@ -22,11 +22,6 @@ import Mathlib.Combinatorics.Hall.Basic
 * `extremePoints_doublyStochastic`: The set of extreme points of the doubly stochastic matrices is
   the set of permutation matrices.
 
-## TODO
-
-* Show that for `x y : n → R`, `x` is majorized by `y` if and only if there is a doubly stochastic
-  matrix `M` such that `M *ᵥ y = x`.
-
 ## Tags
 
 Doubly stochastic, Birkhoff's theorem, Birkhoff-von Neumann theorem
