@@ -178,7 +178,8 @@ private lemma sum_le_sum_initialSegm {w : Fin n → R} (hw : Antitone w) {m : �
     · -- pivot: the smallest value of `w` on `L \ S`
       obtain ⟨j, hj, hjmin⟩ := Finset.exists_min_image (L \ S) w hB
       have hjL : j ∈ L := (Finset.mem_sdiff.mp hj).1
-      calc ∑ i ∈ S \ L, w i ≤ (S \ L).card • w j := by
+      calc ∑ i ∈ S \ L, w i
+          ≤ (S \ L).card • w j := by
             apply Finset.sum_le_card_nsmul
             intro i hi
             have hiL : i ∉ L := (Finset.mem_sdiff.mp hi).2
@@ -506,7 +507,8 @@ theorem majorizedBy_mulVec_of_mem_doublyStochastic {M : Matrix ι ι R}
       _ = ∑ j ∈ T, y j := by rw [← Finset.sum_mul, hw1, one_mul]
   · -- totals: each rearrangement of `y` has the same total
     rw [hS univ]
-    calc ∑ σ, w σ * ∑ i, y (π σ i) = ∑ σ, w σ * ∑ i, y i := by
+    calc ∑ σ, w σ * ∑ i, y (π σ i)
+        = ∑ σ, w σ * ∑ i, y i := by
           refine Finset.sum_congr rfl fun σ _ => ?_
           rw [Equiv.sum_comp (π σ) y]
       _ = ∑ i, y i := by rw [← Finset.sum_mul, hw1, one_mul]
